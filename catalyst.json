@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "targets": [
+      "hotel-booking-sync",
+      "hotel-bookings-read"
+    ],
+    "ignore": [],
+    "source": "functions"
+  }
+}

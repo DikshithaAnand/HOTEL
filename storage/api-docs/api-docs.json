@@ -1,0 +1,3488 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Hotelia Multi-Tenant Hotel Management API",
+        "description": "Production-grade RESTful API documentation for Hotelia multi-tenant hotel backend application.",
+        "contact": {
+            "email": "support@hotelia.app"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Primary API Server"
+        }
+    ],
+    "paths": {
+        "/api/v1/admin/audit-logs": {
+            "get": {
+                "tags": [
+                    "Security"
+                ],
+                "summary": "Display a listing of the system audit logs (requires view activity logs permission)",
+                "operationId": "cf48819dbc837858af5e2b3452be32ab",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "filter[log_name]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter[event]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter[causer_id]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "filter[description]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Audit logs retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/users/{user}/unlock": {
+            "post": {
+                "tags": [
+                    "Security"
+                ],
+                "summary": "Unlock a locked user account (requires update users permission)",
+                "operationId": "f3c1d91c69eda58ed56e508fd2b9e516",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User account unlocked successfully"
+                    },
+                    "400": {
+                        "description": "User account is not locked"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Authenticate user and issue Sanctum token",
+                "operationId": "9d0bb5c770cbec19b0b9566606ef4adb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@hotelia.app"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Secret123!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    },
+                    "423": {
+                        "description": "Account temporarily locked"
+                    },
+                    "429": {
+                        "description": "Too many login attempts"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Retrieve current user profile with roles and permissions",
+                "operationId": "7edb820901b8b3a880fc4d7a0a7290fb",
+                "responses": {
+                    "200": {
+                        "description": "User profile retrieved"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout and revoke current token",
+                "operationId": "3a27a9e02ceb521eb3f98c8d2394aef9",
+                "responses": {
+                    "200": {
+                        "description": "Logged out successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/change-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Change user password with complexity and history checks",
+                "operationId": "b4a6b786c3ea2bdeeeaffbd91bd8ba3b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "new_password",
+                                    "new_password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "new_password_confirmation": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password changed successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed or password reuse violation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/auth/forgot-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Request a password reset link",
+                "operationId": "437215cac3c3afab1309cb86f7657307",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@hotelia.app"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Reset link emailed successfully"
+                    },
+                    "400": {
+                        "description": "Failed to send reset link"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/reset-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Reset password using token",
+                "operationId": "55b7eadc0d6132c55cb1fb3264779cc3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "type": "string",
+                                        "example": "valid-reset-token"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@hotelia.app"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "NewSecret123!"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "NewSecret123!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successful"
+                    },
+                    "422": {
+                        "description": "Validation or history policy failed"
+                    }
+                }
+            }
+        },
+        "/api/v1/hotels/{hotel}/bookings/{booking}/invoice": {
+            "get": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "Display the booking's invoice (generate if not existing)",
+                "operationId": "ee7817eb9bac549b7f20fc21b25e46a8",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invoice details retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Booking or Hotel not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/bookings/{booking}/invoice/regenerate": {
+            "post": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "Manually trigger invoice regeneration (e.g. after booking modifications)",
+                "operationId": "bbdfcbb3f2461ad0c9f3ed5254694081",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invoice regenerated successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Booking or Hotel not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/bookings/{booking}/payments": {
+            "get": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "Display a listing of payments logged for a booking",
+                "operationId": "43b003d4552366e65d72e32b1446f205",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    },
+                    {
+                        "name": "filter[status]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter[payment_method]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payments list retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Booking or Hotel not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "Log a new payment for the booking",
+                "operationId": "45d436a0c2334a319ddd54b2d29350d3",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "amount",
+                                    "payment_method"
+                                ],
+                                "properties": {
+                                    "amount": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 5000
+                                    },
+                                    "payment_method": {
+                                        "type": "string",
+                                        "example": "m-pesa"
+                                    },
+                                    "transaction_reference": {
+                                        "type": "string",
+                                        "example": "TXN12345678"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "completed"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Payment logged successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/bookings/{booking}/payments/{payment}/status": {
+            "put": {
+                "tags": [
+                    "Billing"
+                ],
+                "summary": "Update the status of a specific payment log",
+                "operationId": "0d5be8abcb6cbd9e72b993b5435ce778",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "payment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "completed"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Payment status updated successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/bookings": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "List all bookings for a hotel",
+                "operationId": "ea4d3c107991180df79b7c4b2c272f59",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bookings list retrieved"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Create a new booking reservation with overlap validation",
+                "operationId": "d520dbc9b43601ef7da10db904edc09d",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "guest_id",
+                                    "check_in_date",
+                                    "check_out_date",
+                                    "room_ids"
+                                ],
+                                "properties": {
+                                    "guest_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "check_in_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-08-01"
+                                    },
+                                    "check_out_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-08-05"
+                                    },
+                                    "room_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            2
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Booking created successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed or room overlap detected"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/bookings/{booking}": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Get booking details",
+                "operationId": "92e5d5f9cd3da8029c6530775a536e0a",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking details retrieved"
+                    },
+                    "404": {
+                        "description": "Booking not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Update booking details",
+                "operationId": "e068c0620dc74eb7f6983c96d0a1eb9f",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking updated successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/bookings/{booking}/cancel": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Cancel a booking",
+                "operationId": "4882500236d2cd8d2707b65c7283380d",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking cancelled successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/bookings/{booking}/check-in": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Check in guest and update rooms to occupied",
+                "operationId": "94762a933d6635cb642f56471b11226c",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking checked in successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/bookings/{booking}/check-out": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Check out guest, update rooms to cleaning, and auto-create housekeeping tasks",
+                "operationId": "42cd6f0f21f8325a4bd03b5fe6618530",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking checked out successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/bookings/{booking}/no-show": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Mark booking as no-show and release rooms",
+                "operationId": "8f67bcfb65694fdfed37a2d2c583f5a8",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "booking",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking marked as no-show successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/guests": {
+            "get": {
+                "tags": [
+                    "Guests"
+                ],
+                "summary": "Display a listing of guests",
+                "operationId": "a47d8c8a9732c8b2c3826e338121a0a8",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    },
+                    {
+                        "name": "filter[first_name]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter[last_name]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter[email]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter[phone]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter[search]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Guests retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Guests"
+                ],
+                "summary": "Store a newly created guest",
+                "operationId": "28d2b9acdbe81c9ba014a3e2743e72bd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "email",
+                                    "phone"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john.doe@example.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+254712345678"
+                                    },
+                                    "nationality": {
+                                        "type": "string",
+                                        "example": "Kenyan"
+                                    },
+                                    "national_id": {
+                                        "type": "string",
+                                        "example": "12345678"
+                                    },
+                                    "passport_number": {
+                                        "type": "string",
+                                        "example": "A1234567B"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Guest created successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/guests/{guest}": {
+            "get": {
+                "tags": [
+                    "Guests"
+                ],
+                "summary": "Display the specified guest details",
+                "operationId": "f6f66070c25162b4198291fcbd0cc3cb",
+                "parameters": [
+                    {
+                        "name": "guest",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Guest details retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Guest not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Guests"
+                ],
+                "summary": "Update the specified guest",
+                "operationId": "24e293e5415e8e4e088d9a10f3e72a75",
+                "parameters": [
+                    {
+                        "name": "guest",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john.doe@example.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+254712345678"
+                                    },
+                                    "nationality": {
+                                        "type": "string",
+                                        "example": "Kenyan"
+                                    },
+                                    "national_id": {
+                                        "type": "string",
+                                        "example": "12345678"
+                                    },
+                                    "passport_number": {
+                                        "type": "string",
+                                        "example": "A1234567B"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Guest updated successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Guest not found"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Guests"
+                ],
+                "summary": "Remove the specified guest",
+                "operationId": "7e28c6ba9f697badb678a033fefb1ab9",
+                "parameters": [
+                    {
+                        "name": "guest",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Guest deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Guest not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/guests/{guest}/bookings": {
+            "get": {
+                "tags": [
+                    "Guests"
+                ],
+                "summary": "Display a listing of the guest's bookings",
+                "operationId": "b7cf580d004c204c0ac78d68987c4d1c",
+                "parameters": [
+                    {
+                        "name": "guest",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Guest bookings retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Guest not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels": {
+            "get": {
+                "tags": [
+                    "Hotels"
+                ],
+                "summary": "List all accessible hotels for the user",
+                "operationId": "f815e787a4773000d4cc58c097ba85d0",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hotels retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Hotels"
+                ],
+                "summary": "Create a new hotel",
+                "operationId": "9accebbf5a12a88b73af7e1e0ae32487",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "phone",
+                                    "country",
+                                    "city"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Grand Hotelia"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "info@grandhotelia.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+254700000000"
+                                    },
+                                    "country": {
+                                        "type": "string",
+                                        "example": "Kenya"
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "example": "Nairobi"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Hotel created successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}": {
+            "get": {
+                "tags": [
+                    "Hotels"
+                ],
+                "summary": "Get hotel details by ID",
+                "operationId": "540656a9774f7c8f3eb89a4c9452dfdf",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hotel details retrieved"
+                    },
+                    "404": {
+                        "description": "Hotel not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Hotels"
+                ],
+                "summary": "Update hotel profile",
+                "operationId": "6495a7ae8d1601136cd9a5dd05a4ddb6",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hotel updated successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Hotel not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Hotels"
+                ],
+                "summary": "Soft delete a hotel",
+                "operationId": "b6a4fb1a314b03b3ad918c299f0ddb74",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hotel deleted successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/settings": {
+            "get": {
+                "tags": [
+                    "Hotel Settings"
+                ],
+                "summary": "Retrieve hotel configuration settings",
+                "operationId": "8994feb15d587e8a83e888a446f07421",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hotel settings retrieved successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Hotel Settings"
+                ],
+                "summary": "Update hotel configuration settings",
+                "operationId": "a2626c52549751708f2d857b1d26ffe1",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "currency": {
+                                        "type": "string",
+                                        "example": "KES"
+                                    },
+                                    "timezone": {
+                                        "type": "string",
+                                        "example": "Africa/Nairobi"
+                                    },
+                                    "language": {
+                                        "type": "string",
+                                        "example": "en"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Hotel settings updated successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/housekeeping": {
+            "get": {
+                "tags": [
+                    "Housekeeping"
+                ],
+                "summary": "List all housekeeping tasks for a hotel",
+                "operationId": "3245e31dfeb8a50c8fc3d5f57bc99e34",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tasks list retrieved"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Housekeeping"
+                ],
+                "summary": "Create and assign a housekeeping task",
+                "operationId": "b35c58164d2413096c5a16eff2da5c03",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "room_id"
+                                ],
+                                "properties": {
+                                    "room_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "assigned_to": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "pending",
+                                        "enum": [
+                                            "pending",
+                                            "in_progress",
+                                            "completed"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Task created successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/housekeeping/{task}": {
+            "get": {
+                "tags": [
+                    "Housekeeping"
+                ],
+                "summary": "Get housekeeping task details",
+                "operationId": "3894a3b4f7ca04428d8d599f108f625e",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "task",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Task details retrieved"
+                    },
+                    "404": {
+                        "description": "Task not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Housekeeping"
+                ],
+                "summary": "Update housekeeping task status",
+                "operationId": "00ed1400dc26d21def5bc60c1ccb32a0",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "task",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Task updated successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Housekeeping"
+                ],
+                "summary": "Delete a housekeeping task",
+                "operationId": "1ea5d735009e7d12d6868f3964d1db57",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "task",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Task deleted successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/maintenance": {
+            "get": {
+                "tags": [
+                    "Maintenance"
+                ],
+                "summary": "List all maintenance requests for a hotel",
+                "operationId": "f69489d6471b785fa7a92550ff840b8c",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Maintenance requests list retrieved"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Maintenance"
+                ],
+                "summary": "Create a new maintenance request",
+                "operationId": "f12c7c25e6c20ec34abb1779af39b66d",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "room_id",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "room_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Leaking showerhead"
+                                    },
+                                    "priority": {
+                                        "type": "string",
+                                        "example": "medium",
+                                        "enum": [
+                                            "low",
+                                            "medium",
+                                            "high",
+                                            "critical"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Maintenance request created successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/maintenance/{maintenanceRequest}": {
+            "get": {
+                "tags": [
+                    "Maintenance"
+                ],
+                "summary": "Get maintenance request details",
+                "operationId": "ba7134ec5bca8346b2747e8b63342c55",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "maintenanceRequest",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Maintenance request details retrieved"
+                    },
+                    "404": {
+                        "description": "Maintenance request not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Maintenance"
+                ],
+                "summary": "Update maintenance request status or details",
+                "operationId": "191e7ec37b36876e630dac5d582497b1",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "maintenanceRequest",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Maintenance request updated successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Maintenance"
+                ],
+                "summary": "Delete a maintenance request",
+                "operationId": "0c9d97a794b45355e2db8f0f5e9874cd",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "maintenanceRequest",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Maintenance request deleted successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Display a listing of notifications for the authenticated user",
+                "operationId": "b59ffc4ac373267b74a564f7d2edfaa6",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notifications list retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/notifications/{id}/read": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Mark a specific notification as read",
+                "operationId": "5902828a95aec817e2346262e54d8d2b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification marked as read successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Notification not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/notifications/read-all": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Mark all notifications as read",
+                "operationId": "ce410d945b47b5e138ee3207448100df",
+                "responses": {
+                    "200": {
+                        "description": "All notifications marked as read successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/reports/dashboard": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Retrieve real-time operational dashboard stats for a hotel",
+                "operationId": "6ba967b7b18024f58647eb57e634735a",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dashboard statistics retrieved successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/reports/revenue": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Retrieve range-based financial revenue KPIs (ADR, RevPAR, payments)",
+                "operationId": "8625e7f849f15c532c565cc54429ffe9",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-07-01"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-07-31"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Revenue statistics retrieved successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/amenities": {
+            "get": {
+                "tags": [
+                    "Amenities"
+                ],
+                "summary": "Display a listing of amenities",
+                "operationId": "9c2dc804bbee84bce87ea741dedc3a42",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    },
+                    {
+                        "name": "filter[name]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Amenities list retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Amenities"
+                ],
+                "summary": "Store a newly created amenity",
+                "operationId": "0cf97bcfdf90a9d1553585f030db3407",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "WiFi"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "High-speed wireless internet access"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Amenity created successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/amenities/{amenity}": {
+            "put": {
+                "tags": [
+                    "Amenities"
+                ],
+                "summary": "Update the specified amenity",
+                "operationId": "52c09eaa47493c0b50b758e8cf6618e9",
+                "parameters": [
+                    {
+                        "name": "amenity",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "WiFi"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "High-speed wireless internet access"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Amenity updated successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Amenity not found"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Amenities"
+                ],
+                "summary": "Remove the specified amenity",
+                "operationId": "32dc0eeb9724efd92ec8a561430bb75b",
+                "parameters": [
+                    {
+                        "name": "amenity",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Amenity deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Amenity not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/rooms": {
+            "get": {
+                "tags": [
+                    "Rooms"
+                ],
+                "summary": "List all rooms in a hotel",
+                "operationId": "07a0ae7bdcd42f3efc932a02aab326a8",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rooms list retrieved"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Rooms"
+                ],
+                "summary": "Create a new physical room",
+                "operationId": "1c382c3621e2b32f316e1aaecb1e9878",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "room_type_id",
+                                    "room_number",
+                                    "floor"
+                                ],
+                                "properties": {
+                                    "room_type_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "room_number": {
+                                        "type": "string",
+                                        "example": "101"
+                                    },
+                                    "floor": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Room created successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/rooms/{room}": {
+            "get": {
+                "tags": [
+                    "Rooms"
+                ],
+                "summary": "Get room details",
+                "operationId": "cd0f08d1c00df5246e3519f15f3378ce",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "room",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Room details retrieved"
+                    },
+                    "404": {
+                        "description": "Room not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Rooms"
+                ],
+                "summary": "Update room details or status",
+                "operationId": "681708c5e53080e3fa2f4d9415b3e9e1",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "room",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Room updated successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Rooms"
+                ],
+                "summary": "Soft delete a room",
+                "operationId": "afc5ce5d337cd09ed5b4507ed5a04616",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "room",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Room deleted successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/room-types": {
+            "get": {
+                "tags": [
+                    "Room Types"
+                ],
+                "summary": "List all room types for a hotel",
+                "operationId": "ce1efd97f5b6be82c980004e166a5537",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Room types list retrieved"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Room Types"
+                ],
+                "summary": "Create a new room type",
+                "operationId": "37bf2db8725ff124a0fb4d211c13362c",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "base_price",
+                                    "capacity",
+                                    "beds"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Executive Suite"
+                                    },
+                                    "base_price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 150
+                                    },
+                                    "capacity": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "beds": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Room type created successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/room-types/{roomType}": {
+            "get": {
+                "tags": [
+                    "Room Types"
+                ],
+                "summary": "Get room type details",
+                "operationId": "eeb2eb8c4cb9324d74bc46a353e54f15",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "roomType",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Room type details retrieved"
+                    },
+                    "404": {
+                        "description": "Room type not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Room Types"
+                ],
+                "summary": "Update room type details",
+                "operationId": "019d1be3778853fc5ef31bbfb0b3304c",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "roomType",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Room type updated successfully"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Room Types"
+                ],
+                "summary": "Delete a room type",
+                "operationId": "91b6368d0bc89aefa504702367092bf6",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "roomType",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Room type deleted successfully"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/login-history": {
+            "get": {
+                "tags": [
+                    "Security"
+                ],
+                "summary": "Display a listing of login history for the authenticated user",
+                "operationId": "1529d2ec1f3d2bcfe6b40bd3e67040e5",
+                "responses": {
+                    "200": {
+                        "description": "Login history retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/failed-logins": {
+            "get": {
+                "tags": [
+                    "Security"
+                ],
+                "summary": "Display a listing of all failed login attempts (requires view activity logs permission)",
+                "operationId": "58ec304f1d35c40664833f3de638511b",
+                "responses": {
+                    "200": {
+                        "description": "Failed logins log retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/services": {
+            "get": {
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Display a listing of ancillary services for a hotel",
+                "operationId": "79c427d8610abf3156272e27d3e71041",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    },
+                    {
+                        "name": "filter[name]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter[is_active]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Services retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Store a newly created ancillary service",
+                "operationId": "45d062d2f0e34b5933a98b000487b0d8",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "price"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Laundry Service"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Wash and iron laundry services"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 500
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Service created successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/services/{service}": {
+            "get": {
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Display the specified service details",
+                "operationId": "84d6b57c85667204dbe615566ba38958",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "service",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Service details retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Service not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Update the specified service",
+                "operationId": "cff07bea7909e420367a45d2de7f83ce",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "service",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Laundry Service"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Wash and iron laundry services"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 500
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Service updated successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Service not found"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Services"
+                ],
+                "summary": "Remove the specified service",
+                "operationId": "268e68dab4f1abc19c5549718fd08414",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "service",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Service deleted successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Service not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Display a listing of the hotel's staff",
+                "operationId": "4a0f03832dc360a9b01cb227f0e6ec99",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    },
+                    {
+                        "name": "filter[email]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Staff list retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Create and assign a new staff member",
+                "operationId": "5d55d055426222521354e65eb813c5cd",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "email",
+                                    "password",
+                                    "role"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "Jane"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Smith"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "jane.smith@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Secret123!"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+254700000000"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "example": "receptionist"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Staff user created and associated successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/hotels/{hotel}/users/{user}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Display the specified staff member details",
+                "operationId": "b178560fb7ab4f050c7b1094adccb42f",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Staff user details retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Staff user not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update the specified staff member details",
+                "operationId": "8ee3ad43818b8adf918862b75c1de036",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "Jane"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Smith"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "jane.smith@example.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+254700000000"
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "example": "receptionist"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Staff user updated successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Staff user not found"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Remove the specified staff member from the hotel",
+                "operationId": "b3a37c5f322da059b956b6013fcf5db7",
+                "parameters": [
+                    {
+                        "name": "hotel",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Staff user dissociated successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Staff user not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Enter Sanctum API token in format: Bearer {token}",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "User authentication and password management endpoints"
+        },
+        {
+            "name": "Billing"
+        },
+        {
+            "name": "Bookings",
+            "description": "Reservation management, check-in, check-out, and cancellation endpoints"
+        },
+        {
+            "name": "Guests",
+            "description": "Guest management operations"
+        },
+        {
+            "name": "Hotels",
+            "description": "Multi-tenant hotel management endpoints"
+        },
+        {
+            "name": "Hotel Settings",
+            "description": "Hotel configuration and localization settings endpoints"
+        },
+        {
+            "name": "Housekeeping",
+            "description": "Room cleaning tasks and assignment operations"
+        },
+        {
+            "name": "Maintenance",
+            "description": "Room maintenance requests and issue tracking operations"
+        },
+        {
+            "name": "Notifications",
+            "description": "In-app staff notification management operations"
+        },
+        {
+            "name": "Reports",
+            "description": "Operational and financial reporting dashboard endpoints"
+        },
+        {
+            "name": "Amenities",
+            "description": "Global and room amenity management operations"
+        },
+        {
+            "name": "Rooms",
+            "description": "Physical hotel room inventory management"
+        },
+        {
+            "name": "Room Types",
+            "description": "Room type categories and pricing management"
+        },
+        {
+            "name": "Security",
+            "description": "Security logs and system activity tracking endpoints"
+        },
+        {
+            "name": "Services",
+            "description": "Ancillary hotel service endpoints"
+        },
+        {
+            "name": "Users",
+            "description": "Hotel staff and user management operations"
+        }
+    ]
+}
